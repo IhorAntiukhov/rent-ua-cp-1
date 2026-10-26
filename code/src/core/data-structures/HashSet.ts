@@ -1,4 +1,4 @@
-import { HashTable } from "./HashTable";
+import { HashTable } from "./HashTable.ts";
 
 // Множина – набір унікальних значень без порядку. Реалізована на хеш-таблиці:
 // значення є ключами, а у вузлах лежить лише мітка true, тому add, has і delete

@@ -15,6 +15,7 @@
 - Поле «Країна» – текстове, з підказками з Trie.
 - Тести не пишемо, перевірка вручну за сценаріями з розділу 12.
 - Застосунок лежить прямо в `code/` (там `package.json`).
+- Імпорти (відносні та `@/…`) пишемо з явним розширенням `.ts` / `.tsx`, як вимагає `deno lint` (правило `no-sloppy-imports`); у `tsconfig.json` для цього ввімкнено `allowImportingTsExtensions`.
 - Інтерфейс українською, ідентифікатори й назви файлів англійською, коментарі українською й стислі.
 
 ## 2. Ролі та сценарії
@@ -185,53 +186,53 @@
 
 | Структура | Ключ → значення | Призначення |
 |---|---|---|
-| `BTree` byId | `id` → `Listing` | первинне сховище |
-| `BTree` byCreatedAt | `[createdAt, id]` → id | сортування за датою |
-| `BTree` byArea | `[area, id]` → id | сортування за площею |
-| `BTree` byPrice | `[price, id]` → id | сортування за ціною, діапазон ціни |
-| `HashTable` byRooms | `rooms` → `HashSet<id>` | фільтр за кімнатами |
-| `HashTable` byOwner | `ownerId` → `HashSet<id>` | фільтр за власником |
-| `Trie` byAddress | `address.toTriePath()` → id | пошук за адресою, підказки |
+| `BTree` listingsById | `id` → `Listing` | первинне сховище |
+| `BTree` createdAtIndex | `[createdAt, id]` → id | сортування за датою |
+| `BTree` areaIndex | `[area, id]` → id | сортування за площею |
+| `BTree` priceIndex | `[price, id]` → id | сортування за ціною, діапазон ціни |
+| `HashTable` roomsIndex | `rooms` → `HashSet<id>` | фільтр за кімнатами |
+| `HashTable` ownerIndex | `ownerId` → `HashSet<id>` | фільтр за власником |
+| `Trie` addressIndex | `address.toTriePath()` → id | пошук за адресою, підказки |
 
 Метод `search(query: ListingQuery): Listing[]`:
 
-1. `candidates = null` (означає «усі»).
-2. Адреса: `Trie.findByPrefix` – множина id, перетин з `candidates`.
-3. Кімнати: точне значення – один кошик; «4+» – об'єднання кошиків з ключами ≥ 4. Перетин.
-4. Власник: кошик `byOwner`. Перетин.
-5. Діапазон ціни: `byPrice.rangeScan([min, ''], [max, '￿'])` – множина id. Перетин.
-6. Сортування: обхід B-дерева за полем і напрямом (`entries` / `entriesDescending`), залишаємо id з `candidates` (або всі, якщо `candidates` порожній) і беремо `Listing` з `byId`.
+1. `candidateIds = null` (означає «усі»).
+2. Адреса: `Trie.findByPrefix` – множина id, перетин з `candidateIds`.
+3. Кімнати: точне значення – один кошик; «4+» (`atLeast`) – об'єднання кошиків з ключами ≥ 4. Перетин.
+4. Власник: кошик `ownerIndex`. Перетин.
+5. Діапазон ціни: `priceIndex.rangeScan([min, ""], [max, "￿"])` – множина id. Перетин.
+6. Сортування: обхід B-дерева за полем і напрямом (`entries` / `entriesDescending`), залишаємо id з `candidateIds` (або всі, якщо `candidateIds` порожній) і беремо `Listing` з `listingsById`.
 
-Також `suggestAddress(parts)` – підказки для автодоповнення на основі `Trie.suggest`.
+Також `suggestAddress(level, filledParts, limit)` – підказки для автодоповнення рівня адреси (країна, місто, вулиця, будинок) на основі `Trie.suggest`; попередні рівні мають бути заповнені.
 
 ### 6.2. `ApplicationRepository`
 
 | Структура | Ключ → значення | Призначення |
 |---|---|---|
-| `BTree` byId | `id` → `Application` | первинне сховище |
-| `HashTable` byListing | `listingId` → `HashSet<id>` | заявки на оголошення |
-| `HashTable` byApplicantStatus | `${applicantId}:${status}` → `HashSet<id>` | заявки орендаря за станами |
+| `BTree` applicationsById | `id` → `Application` | первинне сховище |
+| `HashTable` listingIndex | `listingId` → `HashSet<id>` | заявки на оголошення |
+| `HashTable` applicantStatusIndex | `${applicantId}:${status}` → `HashSet<id>` | заявки орендаря за станами |
 
-Методи: `findByListing(listingId, status?)`, `findByApplicant(applicantId, status?)`, `countByApplicantStatus`, `countPendingByListing`. Результати впорядковуються за датою (нові спершу) вбудованим `sort` – обсяги малі.
+Методи: `findByListing(listingId, status?)`, `findByApplicant(applicantId, status?)`, `hasPendingApplication(applicantId, listingId)`. Окремих методів підрахунку немає: лічильники (вкладки станів, кількість нових заявок) беруться як `.length` списку. Результати впорядковуються за датою (нові спершу) вбудованим `sort` – обсяги малі.
 
 ### 6.3. `FavoriteRepository`
 
 | Структура | Ключ → значення | Призначення |
 |---|---|---|
-| `BTree` byId | `id` → `Favorite` | первинне сховище |
-| `HashTable` byUser | `userId` → `HashSet<listingId>` | збережені, перевірка «вподобано» |
+| `BTree` favoritesById | `id` → `Favorite` | первинне сховище |
+| `HashTable` userIndex | `userId` → `HashSet<listingId>` | збережені, перевірка «вподобано» |
 
-Методи: `findListingIds(userId)` (за датою додавання), `isFavorite(userId, listingId)`.
+Методи: `findFavoriteListingIds(userId)` (за датою додавання), `isFavorite(userId, listingId)`.
 
 ### 6.4. `ListingQuery`
 
 Імутабельний опис запиту з fluent-інтерфейсом:
 
-- `address(parts: { country?, city?, street?, building? })`
-- `rooms(value, orMore)`
-- `priceBetween(min?, max?)`
-- `ownedBy(uid)`
-- `sortBy(field: 'createdAt' | 'area' | 'price', direction: 'asc' | 'desc')`
+- `withAddress(parts: { country?, city?, street?, building? })`
+- `withRooms(roomCount, atLeast)`
+- `withPriceBetween(minPricePerMonth, maxPricePerMonth)`
+- `withOwner(ownerId)`
+- `withSorting(field: 'createdAt' | 'area' | 'price', direction: 'asc' | 'desc')`
 
 Значення за замовчуванням: сортування за датою створення за спаданням.
 
@@ -258,7 +259,7 @@
 
 - **AuthService**: `register`, `login`, `logout`, `onAuthChange(cb)`, `getProfile(uid)`. Перетворення логіна на email і переклад помилок.
 - **ListingService**: `create`, `update`, `cancel`, `reopen`.
-  - `cancel`: batch з видаленням оголошення, його заявок (з `ApplicationRepository.byListing`) і вподобань (разовий `getDocs(where listingId == id)`).
+  - `cancel`: batch з видаленням оголошення, його заявок (з `ApplicationRepository.findByListing`) і вподобань (разовий `getDocs(where listingId == id)`).
   - `reopen`: транзакція – оголошення в `OPEN`, схвалена заявка в `REVOKED`.
 - **ApplicationService**: `submit`, `withdraw`, `reject`, `approve`.
   - `approve`: транзакція – оголошення в `CLOSED` з `approvedApplicationId`, заявка в `APPROVED`, решта `PENDING` у `REJECTED`.
@@ -368,7 +369,7 @@ RentUA   Оголошення                                                   
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-Список формується запитом `ownedBy(uid)` з тим самим сортуванням, що й у каталозі. «Скасувати» вимагає підтвердження в `AlertDialog`.
+Список формується запитом `withOwner(uid)` з тим самим сортуванням, що й у каталозі. «Скасувати» вимагає підтвердження в `AlertDialog`.
 
 ### 10.6. Форма оголошення (створення й редагування)
 

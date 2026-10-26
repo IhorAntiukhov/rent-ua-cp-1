@@ -1,5 +1,5 @@
-import { HashSet } from "./HashSet";
-import { TrieNode } from "./TrieNode";
+import { HashSet } from "./HashSet.ts";
+import { TrieNode } from "./TrieNode.ts";
 
 // Розділювач сегментів шляху (країна, місто, вулиця тощо)
 export const TRIE_SEPARATOR = "\u001F";

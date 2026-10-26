@@ -1,4 +1,4 @@
-import { BTreeNode } from "./BTreeNode";
+import { BTreeNode } from "./BTreeNode.ts";
 
 const DEFAULT_MIN_DEGREE = 4;
 

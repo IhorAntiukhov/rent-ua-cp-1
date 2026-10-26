@@ -1,6 +1,6 @@
-import { Address, type AddressData } from "./Address";
-import { DomainError } from "./DomainError";
-import { ListingStatus } from "./enums";
+import { Address, type AddressData } from "./Address.ts";
+import { DomainError } from "./DomainError.ts";
+import { ListingStatus } from "./enums.ts";
 
 export interface ListingInput {
   ownerName: string;

@@ -1,5 +1,5 @@
-import { HashSet } from "./HashSet";
-import { HashTable } from "./HashTable";
+import { HashSet } from "./HashSet.ts";
+import { HashTable } from "./HashTable.ts";
 
 export class TrieNode {
   readonly children = new HashTable<string, TrieNode>();

@@ -1,5 +1,5 @@
-import { HashSet } from "../data-structures/HashSet";
-import { HashTable } from "../data-structures/HashTable";
+import { HashSet } from "../data-structures/HashSet.ts";
+import { HashTable } from "../data-structures/HashTable.ts";
 
 type BucketKey = string | number;
 

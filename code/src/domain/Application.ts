@@ -1,6 +1,6 @@
-import { DomainError } from "./DomainError";
-import { ApplicationStatus } from "./enums";
-import type { Listing } from "./Listing";
+import { DomainError } from "./DomainError.ts";
+import { ApplicationStatus } from "./enums.ts";
+import type { Listing } from "./Listing.ts";
 
 export interface ApplicationInput {
   applicantName: string;
