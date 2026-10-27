@@ -26,11 +26,14 @@ export class Application {
   readonly id: string;
   readonly listingId: string;
   readonly ownerId: string;
+
   readonly applicantId: string;
   readonly applicantName: string;
   readonly contact: string;
   readonly comment: string | null;
+
   readonly status: ApplicationStatus;
+
   readonly createdAt: number;
   readonly updatedAt: number;
 
@@ -38,11 +41,14 @@ export class Application {
     this.id = data.id;
     this.listingId = data.listingId;
     this.ownerId = data.ownerId;
+
     this.applicantId = data.applicantId;
     this.applicantName = data.applicantName;
     this.contact = data.contact;
     this.comment = data.comment;
+
     this.status = data.status;
+
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
   }
@@ -50,15 +56,19 @@ export class Application {
   static create(id: string, listing: Listing, applicantId: string, input: ApplicationInput, now: number): Application {
     if (listing.isOwnedBy(applicantId)) throw new DomainError("Не можна подати заявку на власне оголошення");
     if (!listing.isOpen) throw new DomainError("Оголошення закрите для нових заявок");
+
     return new Application({
       id,
       listingId: listing.id,
       ownerId: listing.ownerId,
+
       applicantId,
       applicantName: input.applicantName,
       contact: input.contact,
       comment: input.comment ? input.comment : null,
+
       status: ApplicationStatus.Pending,
+
       createdAt: now,
       updatedAt: now,
     });
@@ -102,11 +112,14 @@ export class Application {
       id: this.id,
       listingId: this.listingId,
       ownerId: this.ownerId,
+
       applicantId: this.applicantId,
       applicantName: this.applicantName,
       contact: this.contact,
       comment: this.comment,
+
       status: this.status,
+
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
@@ -114,6 +127,7 @@ export class Application {
 
   private transition(from: ApplicationStatus, to: ApplicationStatus, now: number): Application {
     if (this.status !== from) throw new DomainError("Цю дію неможливо виконати в поточному стані заявки");
+
     return new Application({ ...this.toData(), status: to, updatedAt: now });
   }
 }

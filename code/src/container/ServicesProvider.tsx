@@ -20,5 +20,6 @@ export function ServicesProvider({ children }: { children: ReactNode }) {
 export function useServices(): ServiceContainer {
   const container = useContext(ServicesContext);
   if (!container) throw new Error("useServices має використовуватись усередині ServicesProvider");
+
   return container;
 }

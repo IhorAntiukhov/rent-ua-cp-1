@@ -29,9 +29,11 @@ interface SyncTarget<T> {
 export class FirestoreSyncService {
   private version = 0;
   private readonly subscribers = new Set<() => void>();
+
   private unsubscribeListings: Unsubscribe | null = null;
   private unsubscribeUserData: Unsubscribe[] = [];
   private activeUserId: string | null = null;
+
   private pendingUserSnapshots = 0;
   private listingsLoaded = false;
   private errorMessage: string | null = null;
@@ -70,6 +72,7 @@ export class FirestoreSyncService {
   // Публічні оголошення: запускається один раз при старті застосунку
   startPublic(): void {
     if (this.unsubscribeListings) return;
+
     this.unsubscribeListings = onSnapshot(
       collection(this.db, COLLECTIONS.listings),
       (snapshot) => {
@@ -84,10 +87,12 @@ export class FirestoreSyncService {
   // Приватні дані користувача: заявки (як власника й орендаря) та вподобання
   startUser(userId: string): void {
     if (this.activeUserId === userId) return;
+
     this.stopUser();
 
     this.activeUserId = userId;
     this.pendingUserSnapshots = USER_LISTENERS_COUNT;
+
     this.unsubscribeUserData = [
       this.listenUserData(
         query(collection(this.db, COLLECTIONS.applications), where("ownerId", "==", userId)),
@@ -105,27 +110,34 @@ export class FirestoreSyncService {
         this.favorites,
       ),
     ];
+
     this.notify();
   }
 
   // Вихід: приватні дані прибираються, оголошення залишаються
   stopUser(): void {
     for (const unsubscribe of this.unsubscribeUserData) unsubscribe();
+
     this.unsubscribeUserData = [];
     this.activeUserId = null;
     this.pendingUserSnapshots = 0;
+
     this.applications.clear();
     this.favorites.clear();
+
     this.notify();
   }
 
   stop(): void {
     this.stopUser();
+
     this.unsubscribeListings?.();
     this.unsubscribeListings = null;
     this.listingsLoaded = false;
     this.errorMessage = null;
+
     this.listings.clear();
+
     this.notify();
   }
 
@@ -135,14 +147,17 @@ export class FirestoreSyncService {
     target: SyncTarget<T>,
   ): Unsubscribe {
     let firstSnapshot = true;
+
     return onSnapshot(
       userQuery,
       (snapshot: QuerySnapshot) => {
         this.applyChanges(snapshot, fromDoc, target);
+
         if (firstSnapshot) {
           firstSnapshot = false;
           this.pendingUserSnapshots--;
         }
+
         this.notify();
       },
       (error: FirestoreError) => this.fail(error),
@@ -179,6 +194,7 @@ export class FirestoreSyncService {
 
   private notify(): void {
     this.version++;
+
     for (const subscriber of this.subscribers) subscriber();
   }
 }

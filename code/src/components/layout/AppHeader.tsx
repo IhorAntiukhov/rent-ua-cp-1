@@ -25,6 +25,7 @@ export function AppHeader() {
 
   async function handleLogout() {
     await authService.logout();
+
     router.push("/");
   }
 

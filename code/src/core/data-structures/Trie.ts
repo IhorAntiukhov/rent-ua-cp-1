@@ -17,18 +17,23 @@ export class Trie {
   insert(path: string, id: string, labels: string[]): void {
     let node = this.root;
     let segment = 0;
+
     for (const char of path) {
+      // Перед роздільником поточний сегмент закінчується в цьому вузлі
       if (char === TRIE_SEPARATOR) {
         node.label ??= labels[segment];
         segment++;
       }
+
       let next = node.children.get(char);
       if (!next) {
         next = new TrieNode();
         node.children.set(char, next);
       }
+
       node = next;
     }
+
     node.label ??= labels[segment];
     node.ids.add(id);
   }
@@ -37,19 +42,25 @@ export class Trie {
   remove(path: string, id: string): boolean {
     const trail: Array<{ parent: TrieNode; char: string }> = [];
     let node = this.root;
+
     for (const char of path) {
       const next = node.children.get(char);
       if (!next) return false;
+
       trail.push({ parent: node, char });
       node = next;
     }
+
     if (!node.ids.delete(id)) return false;
 
+    // Іде від кінцевого вузла вгору, доки гілка порожня
     for (let i = trail.length - 1; i >= 0; i--) {
       if (node.ids.size > 0 || node.children.size > 0) break;
+
       trail[i].parent.children.delete(trail[i].char);
       node = trail[i].parent;
     }
+
     return true;
   }
 
@@ -60,11 +71,14 @@ export class Trie {
     if (!start) return result;
 
     const stack = [start];
+
     while (stack.length > 0) {
       const node = stack.pop()!;
+
       for (const id of node.ids) result.add(id);
       for (const child of node.children.values()) stack.push(child);
     }
+
     return result;
   }
 
@@ -75,24 +89,32 @@ export class Trie {
 
     const labels: string[] = [];
     const stack = [start];
+
     while (stack.length > 0) {
       const node = stack.pop()!;
+
       const endsSegment = node.ids.size > 0 || node.children.has(TRIE_SEPARATOR);
       if (endsSegment && node.label !== null) labels.push(node.label);
+
+      // Через роздільник не переходимо: підказки лише для поточного сегмента
       for (const [char, child] of node.children.entries()) {
         if (char !== TRIE_SEPARATOR) stack.push(child);
       }
     }
+
     return labels.sort((a, b) => a.localeCompare(b, "uk")).slice(0, limit);
   }
 
   private descend(prefix: string): TrieNode | null {
     let node = this.root;
+
     for (const char of prefix) {
       const next = node.children.get(char);
       if (!next) return null;
+
       node = next;
     }
+
     return node;
   }
 }

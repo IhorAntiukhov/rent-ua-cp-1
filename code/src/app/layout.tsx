@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import type { ReactNode } from "react";
 import { AuthProvider } from "@/components/auth/AuthProvider.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
 import { ServicesProvider } from "@/container/ServicesProvider.tsx";
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   description: "Довгострокова оренда житла в містах України",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="uk"

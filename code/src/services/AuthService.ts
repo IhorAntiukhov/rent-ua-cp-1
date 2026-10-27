@@ -28,6 +28,7 @@ export class AuthService {
   async register(values: RegisterFormValues): Promise<UserProfile> {
     const registration = this.createAccount(values);
     this.pendingRegistration = registration;
+
     try {
       return await registration;
     } catch (error) {
@@ -56,25 +57,31 @@ export class AuthService {
 
   async getProfile(userId: string): Promise<UserProfile | null> {
     await this.pendingRegistration?.catch(() => undefined);
+
     const snapshot = await getDoc(doc(this.db, COLLECTIONS.users, userId));
+
     return snapshot.exists() ? userProfileFromDoc(snapshot) : null;
   }
 
   private async createAccount(values: RegisterFormValues): Promise<UserProfile> {
     const credential = await createUserWithEmailAndPassword(this.auth, values.email, values.password);
     const profile = UserProfile.create(credential.user.uid, values.email, values.firstName, values.lastName, Date.now());
+
     try {
       await setDoc(doc(this.db, COLLECTIONS.users, profile.uid), userProfileToDoc(profile));
     } catch (error) {
       await deleteUser(credential.user);
       throw error;
     }
+
     return profile;
   }
 
   private static toDomainError(error: unknown): DomainError {
     if (error instanceof DomainError) return error;
+
     const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "";
+
     switch (code) {
       case "auth/email-already-in-use":
         return new DomainError("Користувач із таким email уже зареєстрований");

@@ -13,6 +13,7 @@ import { loginFormSchema, type LoginFormValues } from "@/lib/validation.ts";
 export function LoginForm() {
   const { authService } = useServices();
   const [formError, setFormError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -21,6 +22,7 @@ export function LoginForm() {
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
+
     try {
       await authService.login(values);
     } catch (error) {

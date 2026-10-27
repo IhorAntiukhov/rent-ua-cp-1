@@ -37,11 +37,14 @@ export class Address {
   // Усі рівні, крім останнього, трактуються як повні, останній – як початок слова
   static searchPrefix(parts: AddressSearchParts): string {
     const segments: string[] = [];
+
     for (const level of ADDRESS_SEARCH_LEVELS) {
       const value = Address.normalize(parts[level] ?? "");
       if (value === "") break;
+
       segments.push(value);
     }
+
     return segments.join(TRIE_SEPARATOR);
   }
 
@@ -49,15 +52,19 @@ export class Address {
   // Якщо якийсь із попередніх рівнів не заповнений, підказок немає (null)
   static suggestionPrefix(level: AddressSearchLevel, parts: AddressSearchParts): string | null {
     const segments: string[] = [];
+
     for (const current of ADDRESS_SEARCH_LEVELS) {
       const value = Address.normalize(parts[current] ?? "");
+
       if (current === level) {
         segments.push(value);
         return segments.join(TRIE_SEPARATOR);
       }
       if (value === "") return null;
+
       segments.push(value);
     }
+
     return null;
   }
 

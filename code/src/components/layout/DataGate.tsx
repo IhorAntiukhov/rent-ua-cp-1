@@ -24,5 +24,6 @@ export function DataGate({ requireUserData = false, children }: DataGateProps) {
     );
   }
   if (!listingsReady || (requireUserData && !userDataReady)) return <PageSkeleton />;
+
   return <>{children}</>;
 }

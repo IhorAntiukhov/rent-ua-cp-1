@@ -13,6 +13,7 @@ import { registerFormSchema, type RegisterFormValues } from "@/lib/validation.ts
 export function RegisterForm() {
   const { authService } = useServices();
   const [formError, setFormError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -21,6 +22,7 @@ export function RegisterForm() {
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
+
     try {
       await authService.register(values);
     } catch (error) {

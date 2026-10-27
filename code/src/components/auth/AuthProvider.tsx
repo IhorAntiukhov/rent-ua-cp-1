@@ -20,15 +20,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let latestChange = 0;
+
     const unsubscribe = authService.onAuthChange((userId) => {
       const change = ++latestChange;
+
       if (userId === null) {
         sync.stopUser();
         setState({ status: "guest", userId: null, profile: null });
         return;
       }
+
       sync.startUser(userId);
       setState({ status: "user", userId, profile: null });
+
+      // Профіль завантажується окремо; застарілі відповіді ігноруються
       authService
         .getProfile(userId)
         .then((profile) => {
@@ -36,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         .catch(() => undefined);
     });
+
     return unsubscribe;
   }, [authService, sync]);
 
@@ -45,5 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth(): AuthState {
   const state = useContext(AuthContext);
   if (!state) throw new Error("useAuth має використовуватись усередині AuthProvider");
+
   return state;
 }

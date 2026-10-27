@@ -26,6 +26,7 @@ export class ListingQuery {
   readonly minPricePerMonth: number | null;
   readonly maxPricePerMonth: number | null;
   readonly ownerIdFilter: string | null;
+
   readonly sortField: SortField;
   readonly sortDirection: SortDirection;
 
@@ -35,6 +36,7 @@ export class ListingQuery {
     this.minPricePerMonth = fields.minPricePerMonth;
     this.maxPricePerMonth = fields.maxPricePerMonth;
     this.ownerIdFilter = fields.ownerIdFilter;
+
     this.sortField = fields.sortField;
     this.sortDirection = fields.sortDirection;
   }
@@ -47,6 +49,7 @@ export class ListingQuery {
       minPricePerMonth: null,
       maxPricePerMonth: null,
       ownerIdFilter: null,
+
       sortField: "createdAt",
       sortDirection: "desc",
     });
@@ -81,8 +84,10 @@ export class ListingQuery {
       minPricePerMonth: this.minPricePerMonth,
       maxPricePerMonth: this.maxPricePerMonth,
       ownerIdFilter: this.ownerIdFilter,
+
       sortField: this.sortField,
       sortDirection: this.sortDirection,
+
       ...changes,
     });
   }

@@ -16,6 +16,7 @@ function compareNewestFirst(a: Application, b: Application): number {
 export class ApplicationRepository {
   // Первинне сховище: id -> заявка
   private readonly applicationsById = new BTree<string, Application>(compareStrings);
+
   // Хеш-індекси: ключ -> id заявок
   private readonly listingIndex = new HashTable<string, HashSet<string>>();
   private readonly applicantStatusIndex = new HashTable<string, HashSet<string>>();
@@ -31,6 +32,7 @@ export class ApplicationRepository {
   upsert(application: Application): void {
     const previous = this.applicationsById.get(application.id);
     if (previous) this.removeFromIndexes(previous);
+
     this.applicationsById.insert(application.id, application);
     this.addToIndexes(application);
   }
@@ -42,8 +44,10 @@ export class ApplicationRepository {
   remove(id: string): boolean {
     const previous = this.applicationsById.get(id);
     if (!previous) return false;
+
     this.removeFromIndexes(previous);
     this.applicationsById.delete(id);
+
     return true;
   }
 
@@ -57,6 +61,7 @@ export class ApplicationRepository {
   findByListing(listingId: string, status?: ApplicationStatus): Application[] {
     const ids = this.listingIndex.get(listingId);
     if (!ids) return [];
+
     return this.loadByIds(ids)
       .filter((application) => status === undefined || application.status === status)
       .sort(compareNewestFirst);
@@ -68,6 +73,7 @@ export class ApplicationRepository {
       status === undefined
         ? this.idsOfApplicantInAllStatuses(applicantId)
         : this.applicantStatusIndex.get(this.applicantStatusKey(applicantId, status));
+
     return ids ? this.loadByIds(ids).sort(compareNewestFirst) : [];
   }
 
@@ -75,6 +81,7 @@ export class ApplicationRepository {
   hasPendingApplication(applicantId: string, listingId: string): boolean {
     const pendingIds = this.applicantStatusIndex.get(this.applicantStatusKey(applicantId, ApplicationStatus.Pending));
     if (!pendingIds) return false;
+
     return this.loadByIds(pendingIds).some((application) => application.listingId === listingId);
   }
 
@@ -84,24 +91,29 @@ export class ApplicationRepository {
 
   private idsOfApplicantInAllStatuses(applicantId: string): HashSet<string> {
     let ids = new HashSet<string>();
+
     for (const status of ALL_APPLICATION_STATUSES) {
       const bucket = this.applicantStatusIndex.get(this.applicantStatusKey(applicantId, status));
       if (bucket) ids = HashSet.union(ids, bucket);
     }
+
     return ids;
   }
 
   private loadByIds(ids: HashSet<string>): Application[] {
     const applications: Application[] = [];
+
     for (const id of ids) {
       const application = this.applicationsById.get(id);
       if (application) applications.push(application);
     }
+
     return applications;
   }
 
   private addToIndexes(application: Application): void {
     addToBucket(this.listingIndex, application.listingId, application.id);
+
     addToBucket(
       this.applicantStatusIndex,
       this.applicantStatusKey(application.applicantId, application.status),
@@ -111,6 +123,7 @@ export class ApplicationRepository {
 
   private removeFromIndexes(application: Application): void {
     removeFromBucket(this.listingIndex, application.listingId, application.id);
+
     removeFromBucket(
       this.applicantStatusIndex,
       this.applicantStatusKey(application.applicantId, application.status),

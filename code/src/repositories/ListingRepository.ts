@@ -11,16 +11,22 @@ import type { ListingQuery, SortField } from "./ListingQuery.ts";
 
 const DEFAULT_SUGGESTION_LIMIT = 8;
 
+// Найбільший символ: верхня межа id в діапазоні складених ключів
+const HIGHEST_CHAR = String.fromCharCode(0xffff);
+
 export class ListingRepository {
   // Первинне сховище: id -> оголошення
   private readonly listingsById = new BTree<string, Listing>(compareStrings);
+
   // B-дерева для сортування та діапазону ціни: [значення, id] -> id
   private readonly createdAtIndex = new BTree<SortKey, string>(compareSortKeys);
   private readonly areaIndex = new BTree<SortKey, string>(compareSortKeys);
   private readonly priceIndex = new BTree<SortKey, string>(compareSortKeys);
+
   // Хеш-індекси для пошуку за рівністю: ключ -> id оголошень
   private readonly roomsIndex = new HashTable<number, HashSet<string>>();
   private readonly ownerIndex = new HashTable<string, HashSet<string>>();
+
   // Префіксний індекс адреси
   private readonly addressIndex = new Trie();
 
@@ -36,6 +42,7 @@ export class ListingRepository {
   upsert(listing: Listing): void {
     const previous = this.listingsById.get(listing.id);
     if (previous) this.removeFromIndexes(previous);
+
     this.listingsById.insert(listing.id, listing);
     this.addToIndexes(listing);
   }
@@ -47,8 +54,10 @@ export class ListingRepository {
   remove(id: string): boolean {
     const previous = this.listingsById.get(id);
     if (!previous) return false;
+
     this.removeFromIndexes(previous);
     this.listingsById.delete(id);
+
     return true;
   }
 
@@ -70,18 +79,22 @@ export class ListingRepository {
     if (addressPrefix !== "") {
       candidateIds = ListingRepository.intersectWithCandidates(candidateIds, this.addressIndex.findByPrefix(addressPrefix));
     }
+
     if (query.roomsFilter) {
       const { roomCount, atLeast } = query.roomsFilter;
       candidateIds = ListingRepository.intersectWithCandidates(candidateIds, this.findIdsByRooms(roomCount, atLeast));
     }
+
     if (query.ownerIdFilter !== null) {
       const ownerIds = this.ownerIndex.get(query.ownerIdFilter) ?? new HashSet<string>();
       candidateIds = ListingRepository.intersectWithCandidates(candidateIds, ownerIds);
     }
+
     if (query.minPricePerMonth !== null || query.maxPricePerMonth !== null) {
       const priceIds = this.findIdsInPriceRange(query.minPricePerMonth, query.maxPricePerMonth);
       candidateIds = ListingRepository.intersectWithCandidates(candidateIds, priceIds);
     }
+
     if (candidateIds !== null && candidateIds.size === 0) return [];
 
     return this.collectSorted(query.sortField, query.sortDirection === "desc", candidateIds);
@@ -94,6 +107,7 @@ export class ListingRepository {
     limit: number = DEFAULT_SUGGESTION_LIMIT,
   ): string[] {
     const prefix = Address.suggestionPrefix(level, filledParts);
+
     return prefix === null ? [] : this.addressIndex.suggest(prefix, limit);
   }
 
@@ -104,19 +118,24 @@ export class ListingRepository {
 
   private findIdsByRooms(roomCount: number, atLeast: boolean): HashSet<string> {
     if (!atLeast) return this.roomsIndex.get(roomCount) ?? new HashSet<string>();
+
     let ids = new HashSet<string>();
+
     for (const [rooms, bucket] of this.roomsIndex.entries()) {
       if (rooms >= roomCount) ids = HashSet.union(ids, bucket);
     }
+
     return ids;
   }
 
   // Межі діапазону: ±Infinity, якщо межу не задано; id в ключі впорядковує записи з однаковою ціною
   private findIdsInPriceRange(minPrice: number | null, maxPrice: number | null): HashSet<string> {
     const lowerBound: SortKey = [minPrice ?? Number.NEGATIVE_INFINITY, ""];
-    const upperBound: SortKey = [maxPrice ?? Number.POSITIVE_INFINITY, "￿"];
+    const upperBound: SortKey = [maxPrice ?? Number.POSITIVE_INFINITY, HIGHEST_CHAR];
     const ids = new HashSet<string>();
+
     for (const [, id] of this.priceIndex.rangeScan(lowerBound, upperBound)) ids.add(id);
+
     return ids;
   }
 
@@ -125,11 +144,14 @@ export class ListingRepository {
     const index = field === "price" ? this.priceIndex : field === "area" ? this.areaIndex : this.createdAtIndex;
     const entries = descending ? index.entriesDescending() : index.entries();
     const listings: Listing[] = [];
+
     for (const [, id] of entries) {
       if (candidateIds !== null && !candidateIds.has(id)) continue;
+
       const listing = this.listingsById.get(id);
       if (listing) listings.push(listing);
     }
+
     return listings;
   }
 
@@ -137,8 +159,10 @@ export class ListingRepository {
     this.createdAtIndex.insert([listing.createdAt, listing.id], listing.id);
     this.areaIndex.insert([listing.area, listing.id], listing.id);
     this.priceIndex.insert([listing.pricePerMonth, listing.id], listing.id);
+
     addToBucket(this.roomsIndex, listing.rooms, listing.id);
     addToBucket(this.ownerIndex, listing.ownerId, listing.id);
+
     this.addressIndex.insert(listing.address.toTriePath(), listing.id, listing.address.segments());
   }
 
@@ -146,8 +170,10 @@ export class ListingRepository {
     this.createdAtIndex.delete([listing.createdAt, listing.id]);
     this.areaIndex.delete([listing.area, listing.id]);
     this.priceIndex.delete([listing.pricePerMonth, listing.id]);
+
     removeFromBucket(this.roomsIndex, listing.rooms, listing.id);
     removeFromBucket(this.ownerIndex, listing.ownerId, listing.id);
+
     this.addressIndex.remove(listing.address.toTriePath(), listing.id);
   }
 }

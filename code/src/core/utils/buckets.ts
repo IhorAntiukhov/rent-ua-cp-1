@@ -13,10 +13,12 @@ export function addToBucket<K extends BucketKey>(
   id: string,
 ): void {
   let bucket = table.get(key);
+
   if (!bucket) {
     bucket = new HashSet<string>();
     table.set(key, bucket);
   }
+
   bucket.add(id);
 }
 
@@ -28,6 +30,8 @@ export function removeFromBucket<K extends BucketKey>(
 ): void {
   const bucket = table.get(key);
   if (!bucket) return;
+
   bucket.delete(id);
+
   if (bucket.size === 0) table.delete(key);
 }

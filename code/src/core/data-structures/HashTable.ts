@@ -38,10 +38,12 @@ export class HashTable<K extends HashKey, V> {
   private static hash(key: HashKey): number {
     const text = String(key);
     let hash = 0x811c9dc5;
+
     for (let i = 0; i < text.length; i++) {
       hash ^= text.charCodeAt(i);
       hash = Math.imul(hash, 0x01000193);
     }
+
     return hash >>> 0;
   }
 
@@ -51,10 +53,12 @@ export class HashTable<K extends HashKey, V> {
 
   private findNode(key: K): HashNode<K, V> | null {
     let node = this.buckets[this.indexOf(key, this.buckets.length)];
+
     while (node !== null) {
       if (node.key === key) return node;
       node = node.next;
     }
+
     return null;
   }
 
@@ -64,9 +68,11 @@ export class HashTable<K extends HashKey, V> {
       existing.value = value;
       return;
     }
+
     const index = this.indexOf(key, this.buckets.length);
     this.buckets[index] = new HashNode(key, value, this.buckets[index]);
     this.count++;
+
     if (this.loadFactor > MAX_LOAD_FACTOR) this.resize(this.buckets.length * 2);
   }
 
@@ -82,16 +88,20 @@ export class HashTable<K extends HashKey, V> {
     const index = this.indexOf(key, this.buckets.length);
     let previous: HashNode<K, V> | null = null;
     let node = this.buckets[index];
+
     while (node !== null) {
       if (node.key === key) {
         if (previous) previous.next = node.next;
         else this.buckets[index] = node.next;
         this.count--;
+
         return true;
       }
+
       previous = node;
       node = node.next;
     }
+
     return false;
   }
 
@@ -119,16 +129,20 @@ export class HashTable<K extends HashKey, V> {
   // Перехешування: вузли переносяться в нову таблицю без копіювання
   private resize(newCapacity: number): void {
     const newBuckets: Array<HashNode<K, V> | null> = new Array(newCapacity).fill(null);
+
     for (const head of this.buckets) {
       let node = head;
+
       while (node !== null) {
         const next = node.next;
         const index = this.indexOf(node.key, newCapacity);
+
         node.next = newBuckets[index];
         newBuckets[index] = node;
         node = next;
       }
     }
+
     this.buckets = newBuckets;
   }
 }

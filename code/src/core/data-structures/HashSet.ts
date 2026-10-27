@@ -38,16 +38,20 @@ export class HashSet<T extends string | number> {
   static intersect<T extends string | number>(a: HashSet<T>, b: HashSet<T>): HashSet<T> {
     const [small, large] = a.size <= b.size ? [a, b] : [b, a];
     const result = new HashSet<T>();
+
     for (const value of small) {
       if (large.has(value)) result.add(value);
     }
+
     return result;
   }
 
   static union<T extends string | number>(a: HashSet<T>, b: HashSet<T>): HashSet<T> {
     const result = new HashSet<T>();
+
     for (const value of a) result.add(value);
     for (const value of b) result.add(value);
+
     return result;
   }
 }

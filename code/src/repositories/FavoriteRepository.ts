@@ -8,6 +8,7 @@ import { Favorite } from "@/domain/Favorite.ts";
 export class FavoriteRepository {
   // Первинне сховище: id -> вподобання
   private readonly favoritesById = new BTree<string, Favorite>(compareStrings);
+
   // Хеш-індекс: userId -> id вподобаних оголошень
   private readonly userIndex = new HashTable<string, HashSet<string>>();
 
@@ -22,6 +23,7 @@ export class FavoriteRepository {
   upsert(favorite: Favorite): void {
     const previous = this.favoritesById.get(favorite.id);
     if (previous) this.removeFromIndexes(previous);
+
     this.favoritesById.insert(favorite.id, favorite);
     this.addToIndexes(favorite);
   }
@@ -33,8 +35,10 @@ export class FavoriteRepository {
   remove(id: string): boolean {
     const previous = this.favoritesById.get(id);
     if (!previous) return false;
+
     this.removeFromIndexes(previous);
     this.favoritesById.delete(id);
+
     return true;
   }
 
@@ -51,12 +55,16 @@ export class FavoriteRepository {
   findFavoriteListingIds(userId: string): string[] {
     const listingIds = this.userIndex.get(userId);
     if (!listingIds) return [];
+
     const favorites: Favorite[] = [];
+
     for (const listingId of listingIds) {
       const favorite = this.favoritesById.get(Favorite.idFor(userId, listingId));
       if (favorite) favorites.push(favorite);
     }
+
     favorites.sort((a, b) => b.createdAt - a.createdAt || compareStrings(a.id, b.id));
+
     return favorites.map((favorite) => favorite.listingId);
   }
 

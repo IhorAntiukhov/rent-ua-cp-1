@@ -61,13 +61,16 @@ export class Listing {
   readonly ownerId: string;
   readonly ownerName: string;
   readonly ownerPhone: string;
+
   readonly address: Address;
   readonly rooms: number;
   readonly area: number;
   readonly description: string;
   readonly pricePerMonth: number;
+
   readonly status: ListingStatus;
   readonly approvedApplicationId: string | null;
+
   readonly createdAt: number;
   readonly updatedAt: number;
 
@@ -76,13 +79,16 @@ export class Listing {
     this.ownerId = fields.ownerId;
     this.ownerName = fields.ownerName;
     this.ownerPhone = fields.ownerPhone;
+
     this.address = fields.address;
     this.rooms = fields.rooms;
     this.area = fields.area;
     this.description = fields.description;
     this.pricePerMonth = fields.pricePerMonth;
+
     this.status = fields.status;
     this.approvedApplicationId = fields.approvedApplicationId;
+
     this.createdAt = fields.createdAt;
     this.updatedAt = fields.updatedAt;
   }
@@ -114,16 +120,19 @@ export class Listing {
 
   update(input: ListingInput, now: number): Listing {
     if (!this.isOpen) throw new DomainError("Редагувати можна лише оголошення зі статусом «Здається»");
+
     return this.copy({ ...toEditableFields(input), updatedAt: now });
   }
 
   close(applicationId: string, now: number): Listing {
     if (!this.isOpen) throw new DomainError("Оголошення вже закрите");
+
     return this.copy({ status: ListingStatus.Closed, approvedApplicationId: applicationId, updatedAt: now });
   }
 
   reopen(now: number): Listing {
     if (this.isOpen) throw new DomainError("Оголошення вже відкрите");
+
     return this.copy({ status: ListingStatus.Open, approvedApplicationId: null, updatedAt: now });
   }
 
@@ -137,13 +146,16 @@ export class Listing {
       ownerId: this.ownerId,
       ownerName: this.ownerName,
       ownerPhone: this.ownerPhone,
+
       address: this.address,
       rooms: this.rooms,
       area: this.area,
       description: this.description,
       pricePerMonth: this.pricePerMonth,
+
       status: this.status,
       approvedApplicationId: this.approvedApplicationId,
+
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
