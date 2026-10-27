@@ -4,7 +4,9 @@
 
 ## Запуск
 
-1. Створити проєкт у Firebase Console, увімкнути Authentication (Email/Password) і Firestore.
+1. Створити проєкт у Firebase Console і налаштувати його:
+   - Authentication: Get started, у Sign-in method увімкнути Email/Password;
+   - Firestore Database: створити базу, у вкладці Rules вставити вміст `firestore.rules` і натиснути Publish.
 2. Скопіювати `.env.local.example` у `.env.local` і заповнити значеннями з налаштувань веб-застосунку Firebase.
 3. Встановити залежності та запустити:
 

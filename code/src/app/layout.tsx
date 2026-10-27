@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AuthProvider } from "@/components/auth/AuthProvider.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
+import { ServicesProvider } from "@/container/ServicesProvider.tsx";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,11 +24,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="uk"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster />
+        <ServicesProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ServicesProvider>
+        <Toaster theme="dark" />
       </body>
     </html>
   );

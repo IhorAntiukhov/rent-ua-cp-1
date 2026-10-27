@@ -1,3 +1,5 @@
+// Next.js підставляє NEXT_PUBLIC_* лише у виразах process.env.*, тому імпорт process неможливий
+// deno-lint-ignore-file no-process-global
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import {

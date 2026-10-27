@@ -12,7 +12,6 @@ export const LIMITS = {
   areaMax: 1000,
   priceMax: 1_000_000,
   passwordMin: 6,
-  loginPattern: /^[a-z0-9._-]{3,20}$/,
   phonePattern: /^\+380\d{9}$/,
 } as const;
 
@@ -66,18 +65,21 @@ export const applicationFormSchema = z.object({
   comment: z.string().trim().max(LIMITS.commentMax, `Коментар: максимум ${LIMITS.commentMax} символів`),
 });
 
+const emailField = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1, "Email: поле обов'язкове")
+  .pipe(z.email("Email: некоректна адреса"));
+
 export const loginFormSchema = z.object({
-  login: z.string().trim().min(1, "Введіть логін"),
+  email: emailField,
   password: z.string().min(1, "Введіть пароль"),
 });
 
 export const registerFormSchema = z
   .object({
-    login: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .regex(LIMITS.loginPattern, "Логін: 3–20 символів, латинські літери, цифри, «.», «_», «-»"),
+    email: emailField,
     firstName: requiredText("Ім'я", LIMITS.nameMax),
     lastName: requiredText("Прізвище", LIMITS.nameMax),
     password: z.string().min(LIMITS.passwordMin, `Пароль: мінімум ${LIMITS.passwordMin} символів`),

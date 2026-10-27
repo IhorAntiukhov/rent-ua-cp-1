@@ -81,7 +81,7 @@ export function userProfileFromDoc(snapshot: { id: string; data(): DocumentData 
   const data: DocumentData = snapshot.data() ?? {};
   return UserProfile.fromData({
     uid: snapshot.id,
-    login: data.login,
+    email: data.email,
     firstName: data.firstName,
     lastName: data.lastName,
     createdAt: data.createdAt,

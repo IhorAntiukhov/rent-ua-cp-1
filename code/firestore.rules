@@ -1,0 +1,77 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function listingPath(listingId) {
+      return /databases/$(database)/documents/listings/$(listingId);
+    }
+
+    function ownsListing(listingId) {
+      return signedIn() && get(listingPath(listingId)).data.ownerId == request.auth.uid;
+    }
+
+    // Профіль: лише власник
+    match /users/{userId} {
+      allow read, write: if signedIn() && request.auth.uid == userId;
+    }
+
+    // Оголошення: читають усі (також без входу), змінює лише власник
+    match /listings/{listingId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.status == 'OPEN';
+      allow update: if signedIn()
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Заявки: бачать автор і власник оголошення
+    match /applications/{applicationId} {
+      allow read: if signedIn()
+        && (resource.data.applicantId == request.auth.uid || resource.data.ownerId == request.auth.uid);
+
+      allow create: if signedIn()
+        && request.resource.data.applicantId == request.auth.uid
+        && request.resource.data.ownerId != request.auth.uid
+        && request.resource.data.status == 'PENDING'
+        && get(listingPath(request.resource.data.listingId)).data.status == 'OPEN'
+        && get(listingPath(request.resource.data.listingId)).data.ownerId == request.resource.data.ownerId;
+
+      // Автор скасовує свою заявку, власник схвалює, відхиляє або анулює
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
+        && (
+          (resource.data.applicantId == request.auth.uid
+            && resource.data.status == 'PENDING'
+            && request.resource.data.status == 'CANCELLED')
+          ||
+          (resource.data.ownerId == request.auth.uid
+            && (
+              (resource.data.status == 'PENDING' && request.resource.data.status in ['APPROVED', 'REJECTED'])
+              ||
+              (resource.data.status == 'APPROVED' && request.resource.data.status == 'REVOKED')
+            ))
+        );
+
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Вподобання: id = userId_listingId; видаляти може також власник оголошення
+    match /favorites/{favoriteId} {
+      allow read: if signedIn()
+        && (resource.data.userId == request.auth.uid || ownsListing(resource.data.listingId));
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && favoriteId == request.auth.uid + '_' + request.resource.data.listingId;
+      allow delete: if signedIn()
+        && (resource.data.userId == request.auth.uid || ownsListing(resource.data.listingId));
+    }
+  }
+}
