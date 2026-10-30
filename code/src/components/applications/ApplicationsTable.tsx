@@ -24,6 +24,8 @@ import { formatDate } from "@/lib/format.ts";
 interface ApplicationsTableProps {
   applications: Application[];
   ownerId: string;
+  // Схвалювати можна, лише поки оголошення відкрите
+  canApprove: boolean;
 }
 
 // Кольори станів: схвалена виділена, решта приглушені
@@ -34,7 +36,7 @@ function statusVariant(status: ApplicationStatus): "default" | "outline" | "seco
   return "secondary";
 }
 
-export function ApplicationsTable({ applications, ownerId }: ApplicationsTableProps) {
+export function ApplicationsTable({ applications, ownerId, canApprove }: ApplicationsTableProps) {
   const { applicationService } = useServices();
   const [approving, setApproving] = useState<Application | null>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -85,8 +87,8 @@ export function ApplicationsTable({ applications, ownerId }: ApplicationsTablePr
               </TableCell>
 
               <TableCell className="text-right">
-                {application.isPending && (
-                  <div className="flex justify-end gap-1">
+                <div className="flex justify-end gap-1">
+                  {canApprove && application.canBeApproved && (
                     <Button
                       type="button"
                       size="icon"
@@ -96,7 +98,9 @@ export function ApplicationsTable({ applications, ownerId }: ApplicationsTablePr
                     >
                       <Check />
                     </Button>
+                  )}
 
+                  {application.isPending && (
                     <Button
                       type="button"
                       size="icon"
@@ -113,8 +117,8 @@ export function ApplicationsTable({ applications, ownerId }: ApplicationsTablePr
                     >
                       <X />
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </TableCell>
             </TableRow>
           ))}

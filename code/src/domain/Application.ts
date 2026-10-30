@@ -83,6 +83,11 @@ export class Application {
     return this.status === ApplicationStatus.Pending;
   }
 
+  // Схвалити можна заявку, що очікує, а також уже відхилену
+  get canBeApproved(): boolean {
+    return this.status === ApplicationStatus.Pending || this.status === ApplicationStatus.Rejected;
+  }
+
   isOwnedBy(userId: string): boolean {
     return this.ownerId === userId;
   }
@@ -92,16 +97,16 @@ export class Application {
   }
 
   approve(now: number): Application {
-    return this.transition(ApplicationStatus.Pending, ApplicationStatus.Approved, now);
+    return this.transition([ApplicationStatus.Pending, ApplicationStatus.Rejected], ApplicationStatus.Approved, now);
   }
 
   reject(now: number): Application {
-    return this.transition(ApplicationStatus.Pending, ApplicationStatus.Rejected, now);
+    return this.transition([ApplicationStatus.Pending], ApplicationStatus.Rejected, now);
   }
 
   // Схвалена заявка закінчується, коли орендар більше не мешкає в квартирі
   endTenancy(now: number): Application {
-    return this.transition(ApplicationStatus.Approved, ApplicationStatus.Ended, now);
+    return this.transition([ApplicationStatus.Approved], ApplicationStatus.Ended, now);
   }
 
   toData(): ApplicationData {
@@ -122,8 +127,8 @@ export class Application {
     };
   }
 
-  private transition(from: ApplicationStatus, to: ApplicationStatus, now: number): Application {
-    if (this.status !== from) throw new DomainError("Цю дію неможливо виконати в поточному стані заявки");
+  private transition(allowedFrom: ApplicationStatus[], to: ApplicationStatus, now: number): Application {
+    if (!allowedFrom.includes(this.status)) throw new DomainError("Цю дію неможливо виконати в поточному стані заявки");
 
     return new Application({ ...this.toData(), status: to, updatedAt: now });
   }

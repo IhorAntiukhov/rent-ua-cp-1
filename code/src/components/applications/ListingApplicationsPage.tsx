@@ -89,7 +89,7 @@ export function ListingApplicationsPage() {
       {visibleApplications.length === 0 ? (
         <p className="text-muted-foreground">Заявок немає.</p>
       ) : (
-        <ApplicationsTable applications={visibleApplications} ownerId={userId} />
+        <ApplicationsTable applications={visibleApplications} ownerId={userId} canApprove={listing.isOpen} />
       )}
     </main>
   );
