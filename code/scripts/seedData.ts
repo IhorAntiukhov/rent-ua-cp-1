@@ -3,8 +3,6 @@ import type { ListingInput } from "@/domain/Listing.ts";
 
 // Чисті дані для заповнення бази: нічого не пише в Firebase, тому годиться для dry-run
 
-export const DEMO_PASSWORD = "Demo12345";
-
 export type DemoRole = "owner" | "tenant";
 
 export interface DemoUser {

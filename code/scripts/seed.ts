@@ -6,7 +6,7 @@ import { Favorite } from "@/domain/Favorite.ts";
 import { Listing } from "@/domain/Listing.ts";
 import { COLLECTIONS } from "@/sync/collections.ts";
 import { applicationFromDoc, applicationToDoc, favoriteToDoc, listingToDoc } from "@/sync/converters.ts";
-import { buildSeedPlan, DEMO_PASSWORD, DEMO_USERS, type SeedApplication, type SeedListing, type SeedPlan } from "./seedData.ts";
+import { buildSeedPlan, DEMO_USERS, type SeedApplication, type SeedListing, type SeedPlan } from "./seedData.ts";
 
 // Заповнює Firebase демонстраційними даними: акаунти, 30–50 оголошень у містах України,
 // заявки в різних станах і вподобання. Повторний запуск нічого не дублює.
@@ -125,7 +125,7 @@ async function main(): Promise<void> {
 
   await signOutUser();
 
-  console.log("\nДемо-акаунти (пароль для всіх: " + DEMO_PASSWORD + "):");
+  console.log("\nДемо-акаунти (пароль для всіх – SEED_DEMO_PASSWORD з .env.local):");
   for (const user of DEMO_USERS) console.log(`  ${user.role === "owner" ? "орендодавець" : "орендар"}: ${user.email}`);
 }
 
