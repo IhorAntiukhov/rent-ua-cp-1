@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RentUA",
+  title: { default: "RentUA", template: "%s – RentUA" },
   description: "Довгострокова оренда житла в містах України",
 };
 
