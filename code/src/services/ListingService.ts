@@ -70,7 +70,7 @@ export class ListingService {
     await this.deleteAll([...references, doc(this.db, COLLECTIONS.listings, listingId)]);
   }
 
-  // Поновлює закрите оголошення; схвалена заявка стає анульованою
+  // Поновлює закрите оголошення; орендар більше не мешкає, тому схвалена заявка завершується
   async reopen(userId: string, listingId: string): Promise<void> {
     this.requireOwnedListing(userId, listingId);
 
@@ -80,8 +80,8 @@ export class ListingService {
 
       const approvedId = listing.approvedApplicationId;
       const approved = approvedId ? await readApplication(this.db, transaction, approvedId) : null;
-      const revoked =
-        approved && approved.status === ApplicationStatus.Approved ? approved.revoke(reopened.updatedAt) : null;
+      const ended =
+        approved && approved.status === ApplicationStatus.Approved ? approved.endTenancy(reopened.updatedAt) : null;
 
       transaction.update(doc(this.db, COLLECTIONS.listings, listingId), {
         status: reopened.status,
@@ -89,10 +89,10 @@ export class ListingService {
         updatedAt: reopened.updatedAt,
       });
 
-      if (revoked) {
-        transaction.update(doc(this.db, COLLECTIONS.applications, revoked.id), {
-          status: revoked.status,
-          updatedAt: revoked.updatedAt,
+      if (ended) {
+        transaction.update(doc(this.db, COLLECTIONS.applications, ended.id), {
+          status: ended.status,
+          updatedAt: ended.updatedAt,
         });
       }
     });

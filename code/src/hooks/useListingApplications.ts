@@ -8,6 +8,9 @@ import { useDataVersion } from "./useDataVersion.ts";
 
 // Заявки на оголошення (нові спершу); без status – у всіх станах
 export function useListingApplications(listingId: string, status?: ApplicationStatus): Application[] {
+  // Дані лежать у змінних репозиторіях: без цього React Compiler відкидає залежність від version
+  "use no memo";
+
   const { applications } = useServices();
   const version = useDataVersion();
 

@@ -1,7 +1,5 @@
-export default function MyListingsPage() {
-  return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-8">
-      <h1 className="text-2xl font-semibold">Мої оголошення</h1>
-    </main>
-  );
+import { MyListingsPage } from "@/components/listings/MyListingsPage.tsx";
+
+export default function MyListingsRoute() {
+  return <MyListingsPage />;
 }

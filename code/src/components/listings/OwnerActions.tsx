@@ -21,8 +21,14 @@ import { ApplicationStatus } from "@/domain/enums.ts";
 import type { Listing } from "@/domain/Listing.ts";
 import { useListingApplications } from "@/hooks/useListingApplications.ts";
 
+interface OwnerActionsProps {
+  listing: Listing;
+  userId: string;
+  size?: "default" | "lg";
+}
+
 // Керування власним оголошенням: заявки, редагування, поновлення та скасування
-export function OwnerActions({ listing, userId }: { listing: Listing; userId: string }) {
+export function OwnerActions({ listing, userId, size = "lg" }: OwnerActionsProps) {
   const { listingService } = useServices();
   const router = useRouter();
 
@@ -63,24 +69,24 @@ export function OwnerActions({ listing, userId }: { listing: Listing; userId: st
   return (
     <>
       <div className="flex flex-wrap gap-2">
-        <Link href={`/my/listings/${listing.id}/applications`} className={buttonVariants({ size: "lg" })}>
+        <Link href={`/my/listings/${listing.id}/applications`} className={buttonVariants({ size })}>
           Заявки
           {pendingCount > 0 && <Badge variant="secondary">{pendingCount}</Badge>}
         </Link>
 
         {listing.isOpen && (
-          <Link href={`/my/listings/${listing.id}/edit`} className={buttonVariants({ variant: "outline", size: "lg" })}>
+          <Link href={`/my/listings/${listing.id}/edit`} className={buttonVariants({ variant: "outline", size })}>
             Редагувати
           </Link>
         )}
 
         {!listing.isOpen && (
-          <Button variant="outline" size="lg" disabled={isBusy} onClick={handleReopen}>
+          <Button variant="outline" size={size} disabled={isBusy} onClick={handleReopen}>
             Поновити
           </Button>
         )}
 
-        <Button variant="destructive" size="lg" disabled={isBusy} onClick={() => setIsConfirmOpen(true)}>
+        <Button variant="destructive" size={size} disabled={isBusy} onClick={() => setIsConfirmOpen(true)}>
           Скасувати оголошення
         </Button>
       </div>

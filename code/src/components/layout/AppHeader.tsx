@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { Suspense } from "react";
 import { useAuth } from "@/components/auth/AuthProvider.tsx";
 import { Brand } from "@/components/layout/Brand.tsx";
 import { buttonVariants } from "@/components/ui/button.tsx";
@@ -15,7 +16,7 @@ const USER_LINKS = [
   { href: "/my/listings", label: "Мої оголошення" },
 ];
 
-export function AppHeader() {
+function AppHeaderContent() {
   const { status, profile } = useAuth();
   const { authService } = useServices();
   const pathname = usePathname();
@@ -69,5 +70,23 @@ export function AppHeader() {
         )}
       </div>
     </header>
+  );
+}
+
+// usePathname на динамічних маршрутах (/listings/[id]) доступний лише під час запиту,
+// тому шапка стрімиться у Suspense, а до цього показує лише назву сайту
+export function AppHeader() {
+  return (
+    <Suspense
+      fallback={
+        <header className="border-b">
+          <div className="mx-auto flex w-full max-w-5xl items-center gap-4 px-4 py-3">
+            <Brand />
+          </div>
+        </header>
+      }
+    >
+      <AppHeaderContent />
+    </Suspense>
   );
 }

@@ -7,6 +7,9 @@ import { useDataVersion } from "./useDataVersion.ts";
 
 // Чи збережене оголошення поточним користувачем; для гостя завжди false
 export function useIsFavorite(listingId: string): boolean {
+  // Дані лежать у змінних репозиторіях: без цього React Compiler відкидає залежність від version
+  "use no memo";
+
   const { favorites } = useServices();
   const { userId } = useAuth();
   const version = useDataVersion();

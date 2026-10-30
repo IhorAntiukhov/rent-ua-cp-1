@@ -7,6 +7,9 @@ import { useDataVersion } from "./useDataVersion.ts";
 
 // Підказки для рівня адреси на основі Trie; порожні, доки не заповнені попередні рівні
 export function useAddressSuggestions(level: AddressSearchLevel, parts: AddressSearchParts): string[] {
+  // Дані лежать у змінних репозиторіях: без цього React Compiler відкидає залежність від version
+  "use no memo";
+
   const { listings } = useServices();
   const version = useDataVersion();
   const { country, city, street, building } = parts;

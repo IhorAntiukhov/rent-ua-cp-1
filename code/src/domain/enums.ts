@@ -7,8 +7,8 @@ export enum ApplicationStatus {
   Pending = "PENDING",
   Approved = "APPROVED",
   Rejected = "REJECTED",
-  Cancelled = "CANCELLED",
-  Revoked = "REVOKED",
+  // Орендар більше не мешкає в квартирі: оголошення поновлено після виселення
+  Ended = "ENDED",
 }
 
 export const LISTING_STATUS_LABELS: Record<ListingStatus, string> = {
@@ -20,6 +20,5 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
   [ApplicationStatus.Pending]: "Очікує",
   [ApplicationStatus.Approved]: "Схвалена",
   [ApplicationStatus.Rejected]: "Відхилена",
-  [ApplicationStatus.Cancelled]: "Скасована",
-  [ApplicationStatus.Revoked]: "Анульована",
+  [ApplicationStatus.Ended]: "Оренду завершено",
 };

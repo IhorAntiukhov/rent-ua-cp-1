@@ -8,6 +8,9 @@ import { useDataVersion } from "./useDataVersion.ts";
 
 // Результат пошуку за запитом; перераховується при зміні запиту або даних
 export function useListingSearch(query: ListingQuery): Listing[] {
+  // Дані лежать у змінних репозиторіях: без цього React Compiler відкидає залежність від version
+  "use no memo";
+
   const { listings } = useServices();
   const version = useDataVersion();
 

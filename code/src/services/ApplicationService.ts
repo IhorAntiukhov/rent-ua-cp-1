@@ -1,4 +1,4 @@
-import { collection, doc, runTransaction, setDoc, updateDoc, type Firestore } from "firebase/firestore";
+import { collection, deleteDoc, doc, runTransaction, setDoc, updateDoc, type Firestore } from "firebase/firestore";
 import { Application, type ApplicationInput } from "@/domain/Application.ts";
 import { DomainError } from "@/domain/DomainError.ts";
 import { ApplicationStatus } from "@/domain/enums.ts";
@@ -31,14 +31,13 @@ export class ApplicationService {
     return application.id;
   }
 
-  // Орендар скасовує власну заявку
+  // Орендар видаляє власну заявку, що очікує: вона повністю зникає
   async withdraw(userId: string, applicationId: string): Promise<void> {
     const application = this.requireApplication(applicationId);
-    if (!application.isSubmittedBy(userId)) throw new DomainError("Можна скасувати лише власну заявку");
+    if (!application.isSubmittedBy(userId)) throw new DomainError("Можна видалити лише власну заявку");
+    if (!application.isPending) throw new DomainError("Видалити можна лише заявку, що очікує");
 
-    const cancelled = application.cancel(Date.now());
-
-    await this.writeStatus(cancelled);
+    await deleteDoc(doc(this.db, COLLECTIONS.applications, application.id));
   }
 
   // Власник оголошення відхиляє заявку

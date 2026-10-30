@@ -99,12 +99,9 @@ export class Application {
     return this.transition(ApplicationStatus.Pending, ApplicationStatus.Rejected, now);
   }
 
-  cancel(now: number): Application {
-    return this.transition(ApplicationStatus.Pending, ApplicationStatus.Cancelled, now);
-  }
-
-  revoke(now: number): Application {
-    return this.transition(ApplicationStatus.Approved, ApplicationStatus.Revoked, now);
+  // Схвалена заявка закінчується, коли орендар більше не мешкає в квартирі
+  endTenancy(now: number): Application {
+    return this.transition(ApplicationStatus.Approved, ApplicationStatus.Ended, now);
   }
 
   toData(): ApplicationData {

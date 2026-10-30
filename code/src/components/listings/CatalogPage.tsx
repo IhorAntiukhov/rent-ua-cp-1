@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CatalogFilterBar } from "@/components/listings/CatalogFilterBar.tsx";
 import { ListingCard } from "@/components/listings/ListingCard.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import { Button, buttonVariants } from "@/components/ui/button.tsx";
 import { useListingSearch } from "@/hooks/useListingSearch.ts";
 import {
   buildListingQuery,
@@ -51,7 +52,13 @@ export function CatalogPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8">
-      <h1 className="text-2xl font-semibold">Оголошення про оренду</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Оголошення про оренду</h1>
+
+        <Link href="/my/listings/new" className={buttonVariants()}>
+          Створити оголошення
+        </Link>
+      </div>
 
       <CatalogFilterBar filters={filters} onChange={updateFilters} onReset={resetFilters} />
 

@@ -44,23 +44,23 @@ service cloud.firestore {
         && get(listingPath(request.resource.data.listingId)).data.status == 'OPEN'
         && get(listingPath(request.resource.data.listingId)).data.ownerId == request.resource.data.ownerId;
 
-      // Автор скасовує свою заявку, власник схвалює, відхиляє або анулює
+      // Стан змінює лише власник: схвалює, відхиляє або завершує оренду
       allow update: if signedIn()
+        && resource.data.ownerId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
         && (
-          (resource.data.applicantId == request.auth.uid
-            && resource.data.status == 'PENDING'
-            && request.resource.data.status == 'CANCELLED')
+          (resource.data.status == 'PENDING' && request.resource.data.status in ['APPROVED', 'REJECTED'])
           ||
-          (resource.data.ownerId == request.auth.uid
-            && (
-              (resource.data.status == 'PENDING' && request.resource.data.status in ['APPROVED', 'REJECTED'])
-              ||
-              (resource.data.status == 'APPROVED' && request.resource.data.status == 'REVOKED')
-            ))
+          (resource.data.status == 'APPROVED' && request.resource.data.status == 'ENDED')
         );
 
-      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+      // Видаляє власник оголошення (разом з ним) або автор своєї заявки, що очікує
+      allow delete: if signedIn()
+        && (
+          resource.data.ownerId == request.auth.uid
+          ||
+          (resource.data.applicantId == request.auth.uid && resource.data.status == 'PENDING')
+        );
     }
 
     // Вподобання: id = userId_listingId; видаляти може також власник оголошення
