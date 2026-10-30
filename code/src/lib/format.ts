@@ -14,6 +14,17 @@ export function formatRooms(rooms: number): string {
   return `${rooms} кімн.`;
 }
 
+// «1 кімната», «2 кімнати», «5 кімнат»
+export function formatRoomCount(rooms: number): string {
+  const lastDigit = rooms % 10;
+  const lastTwoDigits = rooms % 100;
+
+  if (lastDigit === 1 && lastTwoDigits !== 11) return `${rooms} кімната`;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwoDigits >= 12 && lastTwoDigits <= 14)) return `${rooms} кімнати`;
+
+  return `${rooms} кімнат`;
+}
+
 export function formatDate(timestamp: number): string {
   return dateFormatter.format(timestamp);
 }
