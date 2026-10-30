@@ -32,9 +32,11 @@ function AppHeaderContent() {
 
   return (
     <header className="border-b">
-      <div className="mx-auto flex w-full max-w-5xl items-center gap-4 px-4 py-3">
+      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
         <Brand />
-        <nav className="flex flex-1 flex-wrap items-center gap-1">
+
+        {/* На вузьких екранах навігація переходить на другий рядок */}
+        <nav className="order-last flex w-full flex-wrap items-center gap-1 sm:order-none sm:w-auto sm:flex-1">
           {links.map((link) => (
             <Link
               key={link.href}
